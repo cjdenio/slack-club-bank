@@ -61,7 +61,7 @@ app.event("app_home_opened", async ({ event, client }) => {
 app.action("slug", async ({ ack, action, body, client }) => {
   await ack();
 
-  const slug = (action as PlainTextInputAction).value;
+  const slug = (action as PlainTextInputAction).value.toLowerCase();
 
   const flavor = flavorTexts[Math.floor(Math.random() * flavorTexts.length)];
 
