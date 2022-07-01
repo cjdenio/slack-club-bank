@@ -1,8 +1,16 @@
 import "dotenv/config";
 
-import { App, InputBlock, PlainTextInputAction } from "@slack/bolt";
+import {
+  App,
+  ContextBlock,
+  ImageElement,
+  InputBlock,
+  MrkdwnElement,
+  PlainTextInputAction,
+} from "@slack/bolt";
 import { fetchEvent } from "./bank";
 import renderEvent from "./eventRenderer";
+import axios from "axios";
 
 const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
@@ -31,7 +39,7 @@ const searchBar = (slug?: string): InputBlock => ({
   },
   label: {
     type: "plain_text",
-    text: "Project ID",
+    text: "Organization ID",
   },
 });
 
@@ -109,7 +117,7 @@ app.action("slug", async ({ ack, action, body, client }) => {
             type: "section",
             text: {
               type: "mrkdwn",
-              text: ":x: oops, couldn't fetch that project",
+              text: ":x: oops, couldn't fetch that organization",
             },
           },
           {
@@ -124,6 +132,139 @@ app.action("slug", async ({ ack, action, body, client }) => {
     });
   }
 });
+
+function renderUserList(slug: string, users: any[]): ContextBlock {
+  if (users.length <= 10) {
+    return {
+      type: "context",
+      elements: users.map(
+        (user: any): ImageElement => ({
+          type: "image",
+          image_url: user.photo,
+          alt_text: user.full_name,
+        })
+      ),
+    };
+  } else {
+    return {
+      type: "context",
+      elements: [
+        ...users.slice(0, 9).map(
+          (user: any): ImageElement => ({
+            type: "image",
+            image_url: user.photo,
+            alt_text: user.full_name,
+          })
+        ),
+        {
+          type: "mrkdwn",
+          text: `<https://bank.hackclub.com/${slug}/team|and ${
+            users.length - 9
+          } more>`,
+        },
+      ],
+    };
+  }
+}
+
+app.event("link_shared", async ({ event, client }) => {
+  const url = event.links[0].url;
+  if (!url) return;
+
+  const organizationMatch = url.match(
+    /^https?:\/\/bank.hackclub.com\/([^\/]+)/
+  );
+  if (!organizationMatch) return;
+
+  try {
+    const { data: organization } = await axios(
+      `https://bank.hackclub.com/api/v3/organizations/${organizationMatch[1]}`
+    );
+    const { data: transactions } = await axios(
+      `https://bank.hackclub.com/api/v3/organizations/${organizationMatch[1]}/transactions`
+    );
+
+    console.log(
+      organization.users.map(
+        (user: any): ImageElement => ({
+          type: "image",
+          image_url: user.photo,
+          alt_text: user.name,
+        })
+      )
+    );
+
+    const lastTransactionDate = new Date(
+      transactions[0].date
+    ).toLocaleDateString("en", {
+      dateStyle: "long",
+      timeZone: "UTC",
+    });
+
+    await client.chat.unfurl({
+      channel: event.channel,
+      ts: event.message_ts,
+      unfurls: {
+        [url]: {
+          blocks: [
+            {
+              type: "section",
+              text: {
+                type: "mrkdwn",
+                text: `*<https://bank.hackclub.com/${organizationMatch[1]}|${organization.name}>* – Hack Club Bank`,
+              },
+              accessory: {
+                type: "image",
+                image_url:
+                  "https://bank.hackclub.com/brand/hcb-icon-icon-dark.png",
+                alt_text: "Hack Club Bank",
+              },
+              fields: [
+                {
+                  type: "mrkdwn",
+                  text: `:money_with_wings: *Balance*\n${(
+                    organization.balances.balance_cents / 100
+                  ).toLocaleString("en", {
+                    style: "currency",
+                    currency: "USD",
+                  })}`,
+                },
+                ...(transactions.length > 0
+                  ? [
+                      <MrkdwnElement>{
+                        type: "mrkdwn",
+                        text: `:calendar: *Last transaction*\n${lastTransactionDate}`,
+                      },
+                    ]
+                  : []),
+              ],
+            },
+            renderUserList(organizationMatch[1], organization.users),
+            {
+              type: "actions",
+              elements: [
+                {
+                  type: "button",
+                  text: {
+                    type: "plain_text",
+                    emoji: true,
+                    text: "View in your browser :arrow_upper_right:",
+                  },
+                  action_id: "nothing",
+                  url: `https://bank.hackclub.com/${organizationMatch[1]}`,
+                },
+              ],
+            },
+          ],
+        },
+      },
+    });
+  } catch (e) {
+    console.log(e);
+  }
+});
+
+app.action("nothing", async ({ ack }) => await ack());
 
 (async () => {
   await app.start(process.env.PORT || 3000);
