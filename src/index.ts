@@ -184,16 +184,6 @@ app.event("link_shared", async ({ event, client }) => {
       `https://bank.hackclub.com/api/v3/organizations/${organizationMatch[1]}/transactions`
     );
 
-    console.log(
-      organization.users.map(
-        (user: any): ImageElement => ({
-          type: "image",
-          image_url: user.photo,
-          alt_text: user.name,
-        })
-      )
-    );
-
     const lastTransactionDate = new Date(
       transactions[0].date
     ).toLocaleDateString("en", {
