@@ -185,7 +185,10 @@ app.event("link_shared", async ({ event, client }) => {
     );
 
     const lastTransactionDate = new Date(
-      transactions[0].date
+      transactions.sort(
+        (a: { date: string }, b: { date: string }) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+      )[0].date
     ).toLocaleDateString("en", {
       dateStyle: "long",
       timeZone: "UTC",
