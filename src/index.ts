@@ -230,21 +230,6 @@ app.event("link_shared", async ({ event, client }) => {
               ],
             },
             renderUserList(organizationMatch[1], organization.users),
-            {
-              type: "actions",
-              elements: [
-                {
-                  type: "button",
-                  text: {
-                    type: "plain_text",
-                    emoji: true,
-                    text: "View in your browser :arrow_upper_right:",
-                  },
-                  action_id: "nothing",
-                  url: `https://bank.hackclub.com/${organizationMatch[1]}`,
-                },
-              ],
-            },
           ],
         },
       },
