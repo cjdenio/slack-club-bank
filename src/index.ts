@@ -28,7 +28,7 @@ const searchBar = (slug?: string): InputBlock => ({
     ...(slug ? { initial_value: slug } : {}),
     placeholder: {
       type: "plain_text",
-      text: 'Try "hq", "wild-wild-west", or "zephyr"',
+      text: 'Try "hq", "zephyr", or "assemble"',
     },
     action_id: "slug",
     focus_on_load: true,
@@ -43,18 +43,18 @@ const searchBar = (slug?: string): InputBlock => ({
   },
 });
 
-// const flavorTexts = [
-//   "beep boop boop...",
-//   "choo choo chew...",
-//   "powered by javascript!",
-//   "how does this even work?",
-//   "connecting to hack club bank...",
-//   "how long will this take?",
-//   "the ghosts are working very hard",
-//   "are you filled with determination?",
-//   "hacking the bank...",
-//   "this bank doesn't even have lollipops",
-// ];
+const flavorTexts = [
+  "beep boop boop...",
+  "choo choo chew...",
+  "powered by javascript!",
+  "how does this even work?",
+  "connecting to hack club bank...",
+  "how long will this take?",
+  "the ghosts are working very hard",
+  "are you filled with determination?",
+  "hacking the bank...",
+  "this bank doesn't even have lollipops",
+];
 
 app.event("app_home_opened", async ({ event, client }) => {
   await client.views.publish({
@@ -71,8 +71,7 @@ app.action("slug", async ({ ack, action, body, client }) => {
 
   const slug = (action as PlainTextInputAction).value.toLowerCase();
 
-  const flavor = (await axios("https://bank.hackclub.com/api/v3/flavor")).data
-    .flavor;
+  const flavor = flavorTexts[Math.floor(Math.random() * flavorTexts.length)];
 
   await client.views.publish({
     user_id: body.user.id,
