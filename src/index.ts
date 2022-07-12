@@ -209,8 +209,11 @@ app.event("link_shared", async ({ event, client }) => {
               accessory: {
                 type: "image",
                 image_url:
+                  organization.logo ||
                   "https://bank.hackclub.com/brand/hcb-icon-icon-dark.png",
-                alt_text: "Hack Club Bank",
+                alt_text: organization.logo
+                  ? organization.name
+                  : "Hack Club Bank",
               },
               fields: [
                 {
