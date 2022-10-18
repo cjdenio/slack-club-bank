@@ -172,7 +172,7 @@ app.event("link_shared", async ({ event, client }) => {
   if (!url) return;
 
   const organizationMatch = url.match(
-    /^https?:\/\/bank.hackclub.com\/([^\/]+)/
+    /^https?:\/\/bank.hackclub.com\/([^\/#]+)/
   );
   if (!organizationMatch) return;
 
