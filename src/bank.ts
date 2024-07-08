@@ -18,10 +18,10 @@ export interface Event {
 
 export async function fetchEvent(slug: string): Promise<Event> {
   const { data: event } = await axios(
-    `https://bank.hackclub.com/api/v3/organizations/${slug}`
+    `https://hcb.hackclub.com/api/v3/organizations/${slug}`
   );
   const { data: transactions } = await axios(
-    `https://bank.hackclub.com/api/v3/organizations/${slug}/transactions`
+    `https://hcb.hackclub.com/api/v3/organizations/${slug}/transactions`
   );
 
   return {

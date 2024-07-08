@@ -158,7 +158,7 @@ function renderUserList(slug: string, users: any[]): ContextBlock {
         ),
         {
           type: "mrkdwn",
-          text: `<https://bank.hackclub.com/${slug}/team|and ${
+          text: `<https://hcb.hackclub.com/${slug}/team|and ${
             users.length - 9
           } more>`,
         },
@@ -172,16 +172,16 @@ app.event("link_shared", async ({ event, client }) => {
   if (!url) return;
 
   const organizationMatch = url.match(
-    /^https?:\/\/bank.hackclub.com\/([^\/#]+)/
+    /^https?:\/\/(?:hcb|bank).hackclub.com\/([^\/#]+)/
   );
   if (!organizationMatch) return;
 
   try {
     const { data: organization } = await axios(
-      `https://bank.hackclub.com/api/v3/organizations/${organizationMatch[1]}`
+      `https://hcb.hackclub.com/api/v3/organizations/${organizationMatch[1]}`
     );
     const { data: transactions } = await axios(
-      `https://bank.hackclub.com/api/v3/organizations/${organizationMatch[1]}/transactions`
+      `https://hcb.hackclub.com/api/v3/organizations/${organizationMatch[1]}/transactions`
     );
 
     const lastTransactionDate = new Date(
@@ -204,16 +204,16 @@ app.event("link_shared", async ({ event, client }) => {
               type: "section",
               text: {
                 type: "mrkdwn",
-                text: `*<https://bank.hackclub.com/${organizationMatch[1]}|${organization.name}>* – Hack Club Bank`,
+                text: `*<https://hcb.hackclub.com/${organizationMatch[1]}|${organization.name}>* – HCB`,
               },
               accessory: {
                 type: "image",
                 image_url:
                   organization.logo ||
-                  "https://bank.hackclub.com/brand/hcb-icon-icon-dark.png",
+                  "https://hcb.hackclub.com/brand/hcb-icon-icon-dark.png",
                 alt_text: organization.logo
                   ? organization.name
-                  : "Hack Club Bank",
+                  : "HCB",
               },
               fields: [
                 {
